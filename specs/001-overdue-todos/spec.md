@@ -14,6 +14,22 @@ having to manually check dates against today's date. This feature must include a
 covering the overdue determination logic and its display, following the existing Jest patterns in
 the repository."
 
+## Clarifications
+
+### Session 2026-10-16
+
+- Q: What should the overdue indicator look like on a todo card? → A: Danger-colored left
+  border on the card, an "Overdue" badge next to the due date, and the due date text in the
+  danger color.
+- Q: Should todos that are due today (not yet overdue) get any special marker? → A: No; due-today
+  todos look the same as any other non-overdue todo.
+- Q: Should overdue todos change position in the list? → A: No; keep the existing newest-first
+  order and only restyle overdue todos.
+- Q: Is showing the number of days overdue required for this release? → A: Yes; the badge text
+  reads "Overdue by N day(s)" (MUST).
+- Q: If the app is left open past midnight, when should todos due yesterday become overdue? → A:
+  On the next page load or list re-render (e.g., after an add, edit, or toggle); no timer.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Spot overdue todos at a glance (Priority: P1)
@@ -33,7 +49,7 @@ incomplete todos display the overdue indicator.
 
 1. **Given** an incomplete todo whose due date is before today, **When** the user views the todo
    list, **Then** that todo is displayed with a distinct overdue visual treatment and a visible
-   "Overdue" text label.
+   overdue badge (e.g., "Overdue by 3 days").
 2. **Given** an incomplete todo whose due date is today, **When** the user views the todo list,
    **Then** that todo is NOT marked as overdue.
 3. **Given** an incomplete todo whose due date is in the future, **When** the user views the todo
@@ -77,8 +93,8 @@ correctly after each action without reloading the page.
 As a user, I can see how many days a todo is overdue so I can decide which overdue item to tackle
 first.
 
-**Why this priority**: Helpful for prioritizing among several overdue items, but the binary overdue
-indicator from Story 1 already delivers most of the value.
+**Why this priority**: Required for this release. It helps prioritize among several overdue items
+and is built on top of the overdue determination from Story 1, so it is sequenced last.
 
 **Independent Test**: Create incomplete todos due 1 day ago and 5 days ago and confirm each shows
 the correct number of days overdue with correct singular/plural wording.
@@ -86,21 +102,22 @@ the correct number of days overdue with correct singular/plural wording.
 **Acceptance Scenarios**:
 
 1. **Given** an incomplete todo due yesterday, **When** the user views the list, **Then** the
-   overdue label reads "Overdue by 1 day".
+   overdue badge reads "Overdue by 1 day".
 2. **Given** an incomplete todo due 5 days ago, **When** the user views the list, **Then** the
-   overdue label reads "Overdue by 5 days".
+   overdue badge reads "Overdue by 5 days".
 
 ---
 
 ### Edge Cases
 
-- **Due today**: A todo due today is not overdue; it becomes overdue only once the calendar day
-  after its due date begins.
+- **Due today**: A todo due today is not overdue and receives no special "due today" or "due soon"
+  treatment; it becomes overdue only once the calendar day after its due date begins.
 - **No due date**: Todos without a due date are never overdue.
 - **Completed items**: Completed todos are never shown as overdue, regardless of their due date.
-- **Day rollover while the app is open**: If the user keeps the app open past midnight, todos due
-  the previous day become overdue the next time the list is displayed or refreshed; a live
-  per-second timer is not required.
+- **Day rollover while the app is open**: Overdue status is recalculated against the current
+  local date on every page load and every list re-render (e.g., after an add, edit, or toggle).
+  No timer or scheduled midnight refresh is used, so a todo due yesterday may appear non-overdue
+  until the next load or re-render.
 - **Time zone**: "Today" is determined by the user's local calendar date on their device, not by
   server time or UTC.
 - **Malformed or missing date value**: If a todo's due date cannot be interpreted as a valid date,
@@ -116,18 +133,18 @@ the correct number of days overdue with correct singular/plural wording.
 
 - **FR-001**: System MUST classify a todo as overdue if and only if the todo is incomplete, has a
   due date, and that due date is strictly earlier than the user's current local calendar date.
-- **FR-002**: System MUST visually distinguish overdue todos from non-overdue todos in the todo
-  list using the project's danger/alert styling from the design system.
-- **FR-003**: System MUST display a visible text label (e.g., "Overdue") on each overdue todo so the
-  status is not communicated by color alone.
+- **FR-002**: System MUST visually distinguish each overdue todo card with a left border in the
+  design system's danger color and render its due date text in the danger color.
+- **FR-003**: System MUST display an overdue text badge next to the due date on each overdue todo
+  so the status is not communicated by color alone.
 - **FR-004**: System MUST NOT mark todos as overdue when they are completed, have no due date, or
   are due today or later.
 - **FR-005**: System MUST re-evaluate and update a todo's overdue status immediately after the user
   toggles its completion status or saves a change to its due date.
-- **FR-006**: System MUST re-evaluate overdue status against the current date whenever the todo
-  list is loaded or refreshed.
-- **FR-007**: System SHOULD display the number of whole calendar days a todo is overdue, using
-  correct singular/plural wording ("Overdue by 1 day", "Overdue by N days").
+- **FR-006**: System MUST re-evaluate overdue status against the current local date on every page
+  load and every re-render of the todo list; no background timer or scheduled refresh is required.
+- **FR-007**: The overdue badge text MUST state the number of whole calendar days the todo is
+  overdue, with correct singular/plural wording ("Overdue by 1 day", "Overdue by N days").
 - **FR-008**: The overdue indicator MUST be perceivable by assistive technology (e.g., announced by
   screen readers as part of the todo item) and MUST meet WCAG AA color contrast in both light and
   dark modes.
@@ -137,7 +154,7 @@ the correct number of days overdue with correct singular/plural wording.
   editing, or deletion behavior.
 - **FR-011**: The feature MUST include automated tests, consistent with the project's existing test
   suite, that cover (a) the overdue determination rules, including all edge cases listed above,
-  and (b) the display of the overdue indicator and label for overdue and non-overdue todos.
+  and (b) the display of the overdue indicator and badge for overdue and non-overdue todos.
 
 ### Key Entities
 
@@ -158,7 +175,7 @@ the correct number of days overdue with correct singular/plural wording.
 - **SC-003**: After completing, reopening, or rescheduling a todo, the overdue indicator reflects
   the new state within 1 second, without a manual page reload.
 - **SC-004**: The overdue indicator is distinguishable without relying on color (verified by the
-  presence of a text label) and meets WCAG AA contrast in both themes.
+  presence of the overdue badge text) and meets WCAG AA contrast in both themes.
 - **SC-005**: Automated tests cover 100% of the overdue determination rules and edge cases, and
   overall project coverage remains at or above 80%.
 
@@ -172,6 +189,7 @@ the correct number of days overdue with correct singular/plural wording.
   required.
 - Overdue todos keep their current position in the list; sorting or filtering by overdue status is
   out of scope (filtering is excluded by the functional requirements).
-- Reminders, notifications, and badges/counts outside the list are out of scope.
+- Reminders, notifications, badges/counts outside the list, and "due today" / "due soon" states are
+  out of scope.
 - The visual treatment uses the existing design system's danger color and Halloween-themed styling
   (e.g., an optional spooky icon) consistent with the UI guidelines.
