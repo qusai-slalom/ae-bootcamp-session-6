@@ -18,6 +18,8 @@ A clean, Material Design-inspired todo application with a Halloween theme. The i
 - **Border**: `#e0e0e0` (light gray)
 - **Success**: `#2e7d32` (green for completed items)
 - **Danger**: `#c62828` (red for delete actions)
+- **Danger Text**: `#c62828` (overdue due-date text)
+- **On Danger**: `#ffffff` (text on danger backgrounds, e.g., overdue badge)
 
 #### Dark Mode
 - **Background**: `#1a1a1a` (dark gray/black)
@@ -30,6 +32,8 @@ A clean, Material Design-inspired todo application with a Halloween theme. The i
 - **Border**: `#404040` (dark gray)
 - **Success**: `#66bb6a` (light green)
 - **Danger**: `#ef5350` (light red)
+- **Danger Text**: `#ff8a80` (lighter red; `#ef5350` is below WCAG AA for small text on dark surfaces)
+- **On Danger**: `#1a1a1a` (text on danger backgrounds, e.g., overdue badge)
 
 ### Typography
 
@@ -101,6 +105,13 @@ All spacing follows an 8px grid system for consistency:
 #### Completed State
 - Title text: Strike-through with reduced opacity (0.6)
 - Checkbox: Marked/filled with success color
+
+#### Overdue State
+- Applies when a todo is incomplete and its due date is before today (user's local date); due today is not overdue
+- Card: 4px left border in danger color
+- Due date text: Danger text color
+- Badge: "Overdue by N day(s)" next to the due date, danger background, on-danger text, Caption size, semi-bold (600), 4px border radius
+- Position in the list is unchanged (no sorting or filtering by overdue status)
 
 ### Input Fields
 - **Border**: 1px solid border color
