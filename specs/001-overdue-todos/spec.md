@@ -134,7 +134,8 @@ the correct number of days overdue with correct singular/plural wording.
 - **FR-001**: System MUST classify a todo as overdue if and only if the todo is incomplete, has a
   due date, and that due date is strictly earlier than the user's current local calendar date.
 - **FR-002**: System MUST visually distinguish each overdue todo card with a left border in the
-  design system's danger color and render its due date text in the danger color.
+  design system's danger color and render its due date text in the design system's danger text
+  color (an accessible variant of the danger color).
 - **FR-003**: System MUST display an overdue text badge next to the due date on each overdue todo
   so the status is not communicated by color alone.
 - **FR-004**: System MUST NOT mark todos as overdue when they are completed, have no due date, or

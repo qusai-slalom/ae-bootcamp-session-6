@@ -35,8 +35,8 @@ independently.
 
 **Purpose**: Create the new folder and the design tokens every story's styling depends on
 
-- [ ] T001 Create directories `packages/frontend/src/utils/` and `packages/frontend/src/utils/__tests__/` per plan.md Project Structure
-- [ ] T002 [P] Add `--danger-text-color` (light `#c62828`, dark `#ff8a80`) and `--on-danger-color` (light `#ffffff`, dark `#1a1a1a`) to both the `:root` and `[data-theme="dark"]` blocks in `packages/frontend/src/styles/theme.css` (research.md R3)
+- [X] T001 Create directories `packages/frontend/src/utils/` and `packages/frontend/src/utils/__tests__/` per plan.md Project Structure
+- [X] T002 [P] Add `--danger-text-color` (light `#c62828`, dark `#ff8a80`) and `--on-danger-color` (light `#ffffff`, dark `#1a1a1a`) to both the `:root` and `[data-theme="dark"]` blocks in `packages/frontend/src/styles/theme.css` (research.md R3)
 
 ---
 
@@ -46,9 +46,9 @@ independently.
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 Write failing unit tests for `parseLocalDate` in `packages/frontend/src/utils/__tests__/overdue.test.js`, covering every row of the `parseLocalDate` table in contracts/overdue-ui.md: a valid date → local midnight (assert `getFullYear/getMonth/getDate/getHours`); `null`/`undefined`/`''` → `null`; `'not-a-date'`, `'2026-13-01'`, `'2026-02-30'` → `null`
-- [ ] T004 Implement and export `parseLocalDate(dateString)` with JSDoc in `packages/frontend/src/utils/overdue.js`. Match `/^\d{4}-\d{2}-\d{2}$/`, build `new Date(y, m - 1, d)`, and return `null` if the components don't round-trip (rejects `2026-02-30`). Make T003 pass.
-- [ ] T005 Replace `new Date(dateString)` with `parseLocalDate(dateString)` inside `formatDate` in `packages/frontend/src/components/TodoCard.js`. This fixes the UTC off-by-one display bug from research.md R1. Confirm the existing tests in `packages/frontend/src/components/__tests__/TodoCard.test.js` still pass.
+- [X] T003 Write failing unit tests for `parseLocalDate` in `packages/frontend/src/utils/__tests__/overdue.test.js`, covering every row of the `parseLocalDate` table in contracts/overdue-ui.md: a valid date → local midnight (assert `getFullYear/getMonth/getDate/getHours`); `null`/`undefined`/`''` → `null`; `'not-a-date'`, `'2026-13-01'`, `'2026-02-30'` → `null`
+- [X] T004 Implement and export `parseLocalDate(dateString)` with JSDoc in `packages/frontend/src/utils/overdue.js`. Match `/^\d{4}-\d{2}-\d{2}$/`, build `new Date(y, m - 1, d)`, and return `null` if the components don't round-trip (rejects `2026-02-30`). Make T003 pass.
+- [X] T005 Replace `new Date(dateString)` with `parseLocalDate(dateString)` inside `formatDate` in `packages/frontend/src/components/TodoCard.js`. This fixes the UTC off-by-one display bug from research.md R1. Confirm the existing tests in `packages/frontend/src/components/__tests__/TodoCard.test.js` still pass.
 
 **Checkpoint**: Foundation ready. Dates are parsed in local time everywhere.
 
@@ -65,7 +65,7 @@ shows the indicator.
 
 ### Tests for User Story 1 ⚠️ (write first, must FAIL)
 
-- [ ] T006 [P] [US1] Add failing unit tests for `getOverdueStatus(todo, today).isOverdue` in `packages/frontend/src/utils/__tests__/overdue.test.js`, using `today = new Date(2026, 9, 16, 15, 30)`:
+- [X] T006 [P] [US1] Add failing unit tests for `getOverdueStatus(todo, today).isOverdue` in `packages/frontend/src/utils/__tests__/overdue.test.js`, using `today = new Date(2026, 9, 16, 15, 30)`:
   - past date `'2026-10-15'` → `true`
   - today `'2026-10-16'` → `false`
   - future `'2026-10-20'` → `false`
@@ -74,30 +74,31 @@ shows the indicator.
   - `'garbage'` → `false`
   - same result for `today` at 00:00 and at 23:59 (time-of-day independence)
   - default `today` argument uses the current date
-- [ ] T007 [P] [US1] Add failing component tests in `packages/frontend/src/components/__tests__/TodoCard.test.js`. In a new `describe('overdue indicator')`, call `jest.useFakeTimers().setSystemTime(new Date(2026, 9, 16))` in `beforeEach` and `jest.useRealTimers()` in `afterEach`, then assert:
+- [X] T007 [P] [US1] Add failing component tests in `packages/frontend/src/components/__tests__/TodoCard.test.js`. In a new `describe('overdue indicator')`, call `jest.useFakeTimers().setSystemTime(new Date(2026, 9, 16))` in `beforeEach` and `jest.useRealTimers()` in `afterEach`, then assert:
   - an overdue todo's card root has the class `overdue`
   - `.todo-due-date` has the class `overdue`
   - an `.overdue-badge` element is rendered inside the due-date paragraph
   - todos due today, in the future, with no due date, or completed (past due) have no `overdue` class and no badge
   - edit mode (after clicking Edit) shows no badge
+  - a todo with an invalid `dueDate` (e.g., `'garbage'`) renders without throwing and shows no badge (FR-009)
 
   Note: the existing fixture `dueDate: '2025-12-25'` is now in the past, so keep existing tests' assertions independent of the badge.
 
 ### Implementation for User Story 1
 
-- [ ] T008 [US1] Implement and export `getOverdueStatus(todo, today = new Date())` with JSDoc in `packages/frontend/src/utils/overdue.js`:
+- [X] T008 [US1] Implement and export `getOverdueStatus(todo, today = new Date())` with JSDoc in `packages/frontend/src/utils/overdue.js`:
   - normalize `today` to local midnight
   - return `{ isOverdue: false, daysOverdue: 0 }` when `todo.completed === 1`, the due date is missing, or the due date is invalid (FR-004, FR-009)
   - otherwise set `isOverdue = dueMidnight < todayMidnight` and compute `daysOverdue` with `Math.round((todayMidnight - dueMidnight) / 86400000)` (research.md R2)
 
   Depends on T004. Makes T006 pass.
-- [ ] T009 [US1] In `packages/frontend/src/components/TodoCard.js`, import `getOverdueStatus` and call it during render. Do not use `useState`/`useMemo` (research.md R4). Then:
+- [X] T009 [US1] In `packages/frontend/src/components/TodoCard.js`, import `getOverdueStatus` and call it during render. Do not use `useState`/`useMemo` (research.md R4). Then:
   - append `overdue` to the root `todo-card` className
   - append `overdue` to the `todo-due-date` className
   - render `<span className="overdue-badge">Overdue</span>` inside the `.todo-due-date` `<p>` after the date
 
   Follow the import order: React → internal modules. Depends on T008. Makes T007 pass.
-- [ ] T010 [P] [US1] Add styles in `packages/frontend/src/App.css` after `.todo-due-date`:
+- [X] T010 [P] [US1] Add styles in `packages/frontend/src/App.css` after `.todo-due-date`:
   - `.todo-card.overdue { border-left: 4px solid var(--danger-color); }`
   - `.todo-due-date.overdue { color: var(--danger-text-color); }`
   - `.overdue-badge`: `display: inline-block`, `margin-left: var(--space-xs)`, `padding: 2px var(--space-xs)`, `background-color: var(--danger-color)`, `color: var(--on-danger-color)`, `font-size: 12px`, `font-weight: 600`, `border-radius: var(--radius-sm)`
@@ -119,13 +120,13 @@ change.
 
 ### Tests for User Story 2 ⚠️ (write first, must FAIL or prove behavior)
 
-- [ ] T011 [P] [US2] Add prop-change tests in `packages/frontend/src/components/__tests__/TodoCard.test.js` that use RTL `rerender` with the clock pinned to 2026-10-16:
+- [X] T011 [P] [US2] Add prop-change tests in `packages/frontend/src/components/__tests__/TodoCard.test.js` that use RTL `rerender` with the clock pinned to 2026-10-16:
   - overdue → `completed: 1` removes the badge and class
   - `completed: 1` → `completed: 0` with a past date adds them
   - past → future `dueDate` removes them
   - past → `null` `dueDate` removes them
   - future → past `dueDate` adds them
-- [ ] T012 [P] [US2] Add integration tests in `packages/frontend/src/__tests__/App.test.js`, using the existing msw `server`:
+- [X] T012 [P] [US2] Add integration tests in `packages/frontend/src/__tests__/App.test.js`, using the existing msw `server`:
   - Override handlers with `server.use(rest.get('/api/todos', ...), rest.patch('/api/todos/:id/toggle', ...), rest.put('/api/todos/:id', ...))` to serve an overdue todo.
   - Build relative dates from the real clock (e.g., a local `YYYY-MM-DD` 3 days ago and 3 days ahead). Do NOT use Jest fake timers here: Jest 27 fake timers can stall msw responses, and `doNotFake` requires Jest 28+.
   - Assert the `.overdue-badge` disappears after clicking the checkbox, and after editing the due date to the future and saving.
@@ -133,7 +134,7 @@ change.
 
 ### Implementation for User Story 2
 
-- [ ] T013 [US2] Verify in `packages/frontend/src/components/TodoCard.js` that overdue status is derived only from current props on each render, with no cached state or memo. If T011 or T012 fail, fix the component so the status follows `todo.completed`/`todo.dueDate` changes. Do not add timers (Clarification Q5).
+- [X] T013 [US2] Verify in `packages/frontend/src/components/TodoCard.js` that overdue status is derived only from current props on each render, with no cached state or memo. If T011 or T012 fail, fix the component so the status follows `todo.completed`/`todo.dueDate` changes. Do not add timers (Clarification Q5).
 
 **Checkpoint**: User Stories 1 and 2 both work. The indicator stays in sync with user actions.
 
@@ -148,16 +149,16 @@ change.
 
 ### Tests for User Story 3 ⚠️ (write first, must FAIL)
 
-- [ ] T014 [P] [US3] Add failing unit tests in `packages/frontend/src/utils/__tests__/overdue.test.js`:
+- [X] T014 [P] [US3] Add failing unit tests in `packages/frontend/src/utils/__tests__/overdue.test.js`:
   - `getOverdueStatus(...).daysOverdue` is `1` for `'2026-10-15'` and `5` for `'2026-10-11'` when today is 2026-10-16, and `0` when not overdue
   - a DST-spanning case (`'2026-03-07'` vs `new Date(2026, 2, 9)`) gives `2`
   - `formatOverdueLabel(1)` → `'Overdue by 1 day'` and `formatOverdueLabel(5)` → `'Overdue by 5 days'`
-- [ ] T015 [P] [US3] Add failing component tests in `packages/frontend/src/components/__tests__/TodoCard.test.js` with the clock pinned to 2026-10-16: the `.overdue-badge` text is `'Overdue by 1 day'` for due `'2026-10-15'` and `'Overdue by 5 days'` for due `'2026-10-11'`
+- [X] T015 [P] [US3] Add failing component tests in `packages/frontend/src/components/__tests__/TodoCard.test.js` with the clock pinned to 2026-10-16: the `.overdue-badge` text is `'Overdue by 1 day'` for due `'2026-10-15'` and `'Overdue by 5 days'` for due `'2026-10-11'`
 
 ### Implementation for User Story 3
 
-- [ ] T016 [US3] Implement and export `formatOverdueLabel(daysOverdue)` with JSDoc in `packages/frontend/src/utils/overdue.js` (singular for 1, plural otherwise). Confirm `daysOverdue` from T008 satisfies T014.
-- [ ] T017 [US3] In `packages/frontend/src/components/TodoCard.js`, replace the static `Overdue` badge text with `formatOverdueLabel(daysOverdue)`. Depends on T016. Makes T015 pass.
+- [X] T016 [US3] Implement and export `formatOverdueLabel(daysOverdue)` with JSDoc in `packages/frontend/src/utils/overdue.js` (singular for 1, plural otherwise). Confirm `daysOverdue` from T008 satisfies T014.
+- [X] T017 [US3] In `packages/frontend/src/components/TodoCard.js`, replace the static `Overdue` badge text with `formatOverdueLabel(daysOverdue)`. Depends on T016. Makes T015 pass.
 
 **Checkpoint**: All user stories are complete. The badge shows the exact days-overdue count.
 
@@ -167,16 +168,16 @@ change.
 
 **Purpose**: Documentation, quality gates, and end-to-end validation
 
-- [ ] T018 [P] Update `docs/ui-guidelines.md`:
+- [X] T018 [P] Update `docs/ui-guidelines.md`:
   - add `--danger-text-color` and `--on-danger-color` to the Light and Dark palettes
   - add an "Overdue State" subsection under Todo Item Card (left border, danger date text, badge "Overdue by N day(s)")
 
   The constitution's governance rule requires docs to stay aligned.
-- [ ] T019 [P] Update `docs/functional-requirements.md`: add "1.6 Overdue Indicator" under Core Features summarizing the overdue rule (incomplete, has a due date, due date before today in local time), the badge text, no reordering, and recalculation on load or re-render; add a matching Success Criteria checkbox
-- [ ] T020 Review `packages/frontend/src/utils/overdue.js` and `packages/frontend/src/components/TodoCard.js`: no `console.log` added, JSDoc on every export, import order, and 2-space indentation (Principle I)
-- [ ] T021 Run `npm test --workspace=packages/frontend` and confirm all tests pass, `src/utils/overdue.js` has 100% coverage, and overall frontend coverage is ≥ 80% (SC-005)
-- [ ] T022 Run `npm test --workspace=packages/backend` and confirm it is unchanged and passing
-- [ ] T023 Run the manual validation steps in `specs/001-overdue-todos/quickstart.md`: light and dark themes, toggle and edit flows, unchanged ordering, and screen-reader text
+- [X] T019 [P] Update `docs/functional-requirements.md`: add "1.6 Overdue Indicator" under Core Features summarizing the overdue rule (incomplete, has a due date, due date before today in local time), the badge text, no reordering, and recalculation on load or re-render; add a matching Success Criteria checkbox
+- [X] T020 Review `packages/frontend/src/utils/overdue.js` and `packages/frontend/src/components/TodoCard.js`: no `console.log` added, JSDoc on every export, import order, and 2-space indentation (Principle I). Run `npx eslint src` in `packages/frontend` (CRA `react-app` config) and confirm no new errors or warnings.
+- [X] T021 Run `npm test --workspace=packages/frontend` and confirm all tests pass, `src/utils/overdue.js` has 100% coverage, and overall frontend coverage is ≥ 80% (SC-005)
+- [X] T022 Run `npm test --workspace=packages/backend` and confirm it is unchanged and passing
+- [X] T023 Run the manual validation steps in `specs/001-overdue-todos/quickstart.md`: light and dark themes, toggle and edit flows, unchanged ordering, and screen-reader text
 
 ---
 

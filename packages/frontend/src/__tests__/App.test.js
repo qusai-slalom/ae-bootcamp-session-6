@@ -232,4 +232,72 @@ describe('App Component', () => {
     fireEvent.click(themToggleAfter);
     expect(localStorage.getItem('todoAppTheme')).toBe('light');
   });
+
+  describe('overdue indicator', () => {
+    // Real clock (not fake timers) because Jest 27 fake timers can stall msw responses
+    const localDateOffset = (days) => {
+      const date = new Date();
+      date.setDate(date.getDate() + days);
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${date.getFullYear()}-${month}-${day}`;
+    };
+
+    const pastDate = localDateOffset(-3);
+    const futureDate = localDateOffset(3);
+
+    const overdueTodo = {
+      id: 1, title: 'Overdue task', dueDate: pastDate, completed: 0, createdAt: '2025-11-02T00:00:00Z'
+    };
+    const otherTodo = {
+      id: 2, title: 'Other task', dueDate: null, completed: 0, createdAt: '2025-11-01T00:00:00Z'
+    };
+
+    const getTitles = () => screen.getAllByRole('heading', { level: 3 }).map((el) => el.textContent);
+
+    beforeEach(() => {
+      server.use(
+        rest.get('/api/todos', (req, res, ctx) => res(ctx.status(200), ctx.json([overdueTodo, otherTodo]))),
+        rest.patch('/api/todos/:id/toggle', (req, res, ctx) => res(
+          ctx.status(200),
+          ctx.json({ ...overdueTodo, completed: 1 })
+        ))
+      );
+    });
+
+    test('shows the overdue badge for a past-due incomplete todo', async () => {
+      render(<App />);
+
+      expect(await screen.findByText('Overdue by 3 days')).toBeInTheDocument();
+      expect(screen.getAllByText(/Overdue by/)).toHaveLength(1);
+    });
+
+    test('removes the overdue badge after the todo is marked complete', async () => {
+      render(<App />);
+      await screen.findByText('Overdue by 3 days');
+      const titlesBefore = getTitles();
+
+      fireEvent.click(screen.getByLabelText('Mark "Overdue task" as complete'));
+
+      await waitFor(() => {
+        expect(screen.queryByText(/Overdue by/)).not.toBeInTheDocument();
+      });
+      expect(getTitles()).toEqual(titlesBefore);
+    });
+
+    test('removes the overdue badge after the due date is moved to the future', async () => {
+      render(<App />);
+      await screen.findByText('Overdue by 3 days');
+      const titlesBefore = getTitles();
+
+      fireEvent.click(screen.getByLabelText('Edit "Overdue task"'));
+      fireEvent.change(screen.getByLabelText('Edit due date'), { target: { value: futureDate } });
+      fireEvent.click(screen.getByRole('button', { name: 'Save' }));
+
+      // Edit mode also hides the badge, so wait for the saved card to render first
+      expect(await screen.findByRole('heading', { name: 'Overdue task' })).toBeInTheDocument();
+      expect(screen.queryByText(/Overdue by/)).not.toBeInTheDocument();
+      expect(getTitles()).toEqual(titlesBefore);
+    });
+  });
 });
